@@ -1,5 +1,6 @@
 package com.sas.usermanagementservice.controllers;
 
+import com.sas.usermanagementservice.dto.LoginRequestDto;
 import com.sas.usermanagementservice.dto.SignUpRequestDto;
 import com.sas.usermanagementservice.dto.UserDto;
 import com.sas.usermanagementservice.services.AuthService;
@@ -26,5 +27,12 @@ public class AuthController {
     {
         UserDto userDto = authService.singUp(request.getEmail(), request.getPassword());
         return new ResponseEntity<>(userDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<UserDto> logIn(@RequestBody LoginRequestDto request)
+    {
+        return authService.logIn(request.getEmail(), request.getPassword());
+
     }
 }
