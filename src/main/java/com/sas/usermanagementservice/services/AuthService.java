@@ -34,28 +34,29 @@ public class AuthService {
         User user = new User();
         user.setEmail(email);
         user.setPassword(bCryptPasswordEncoder.encode(password));
-
         User savedUser = userRepository.save(user);
+
         return  UserDto.createUserDto(savedUser);
     }
 
     public ResponseEntity<UserDto> logIn(String email, String password) {
         Optional<User> userOptional = userRepository.findByEmail(email);
-
         if(userOptional.isEmpty()) {
             return null;
         }
+
+        //If user exist get the user.
         User user = userOptional.get();
+
+        //Match the password in db with password entered by user.
         if(!bCryptPasswordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Wrong password");
         }
 
-//        int sessionCount = sessionRepository.findBySessionStatusAndUser();
         int sessionCount = sessionRepository.countSessionBySessionStatusAndUserId(SessionStatus.ACTIVE, user.getId());
 
-        System.out.println("sessionCount "+sessionCount);
-        // To create toke need RandomStringUtils method. For using first we need to add dependency for it.
         if(sessionCount < 2) {
+        // To create toke need RandomStringUtils method. For using first we need to add dependency for it.
             String token = RandomStringUtils.randomAlphanumeric(30);
 
             Session session = new Session();
@@ -73,5 +74,21 @@ public class AuthService {
         }
         else
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+    }
+
+
+    public ResponseEntity<String> logOut(String token, Long userId) {
+
+        Optional<Session> sessionOptional = sessionRepository.findByTokenAndUser_Id(token, userId);
+        if(sessionOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        Session session = sessionOptional.get();
+        session.setSessionStatus(SessionStatus.ENDED);
+        sessionRepository.save(session);
+
+        return new ResponseEntity<>("Logout Successful", HttpStatus.OK);
+
     }
 }
