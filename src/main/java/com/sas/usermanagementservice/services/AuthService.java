@@ -2,6 +2,7 @@ package com.sas.usermanagementservice.services;
 
 import com.sas.usermanagementservice.dto.UserDto;
 import com.sas.usermanagementservice.models.Session;
+import com.sas.usermanagementservice.models.SessionStatus;
 import com.sas.usermanagementservice.models.User;
 import com.sas.usermanagementservice.repositories.SessionRepository;
 import com.sas.usermanagementservice.repositories.UserRepository;
@@ -49,19 +50,28 @@ public class AuthService {
             throw new RuntimeException("Wrong password");
         }
 
+//        int sessionCount = sessionRepository.findBySessionStatusAndUser();
+        int sessionCount = sessionRepository.countSessionBySessionStatusAndUserId(SessionStatus.ACTIVE, user.getId());
+
+        System.out.println("sessionCount "+sessionCount);
         // To create toke need RandomStringUtils method. For using first we need to add dependency for it.
-        String token = RandomStringUtils.randomAlphanumeric(30);
+        if(sessionCount < 2) {
+            String token = RandomStringUtils.randomAlphanumeric(30);
 
-        Session session = new Session();
-        session.setToken(token);
-        session.setUser(user);
-        sessionRepository.save(session);
+            Session session = new Session();
+            session.setSessionStatus(SessionStatus.ACTIVE);
+            session.setToken(token);
+            session.setUser(user);
+            sessionRepository.save(session);
 
-        UserDto userDto = new UserDto();
-        userDto.setEmail(email);
+            UserDto userDto = new UserDto();
+            userDto.setEmail(email);
 
-        ResponseEntity<UserDto> responseEntity = new ResponseEntity<>(userDto, HttpStatus.OK);
+            ResponseEntity<UserDto> responseEntity = new ResponseEntity<>(userDto, HttpStatus.OK);
 
-        return responseEntity;
+            return responseEntity;
+        }
+        else
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
     }
 }

@@ -16,4 +16,6 @@ public class Session extends BaseModel{
     private Date expiringAt;
     @ManyToOne
     private User user;
+
+    private SessionStatus sessionStatus;
 }
