@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface SessionRepository extends JpaRepository<Session, Long> {
-    int countSessionBySessionStatusAndUserId(SessionStatus sessionStatus, Long id);
+    int countSessionBySessionStatusAndUser_Id(SessionStatus sessionStatus, Long id);
 
     Optional<Session> findByTokenAndUser_Id(String token, Long userId);
 }
